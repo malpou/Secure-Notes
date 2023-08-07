@@ -12,7 +12,7 @@ public partial class Functions
 {
     [Function("Login")]
     public async Task<HttpResponseData> Login(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "login")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "login")]
         HttpRequestData req,
         FunctionContext executionContext)
     {

@@ -12,7 +12,7 @@ public partial class Functions
 {
     [Function("CreateUser")]
     public async Task<HttpResponseData> CreateUser(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "register")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "register")]
         HttpRequestData req,
         FunctionContext executionContext)
     {
