@@ -35,4 +35,9 @@ public static class FunctionHelpers
     {
         return !string.IsNullOrEmpty(request.Username) && !string.IsNullOrEmpty(request.Password);
     }
+
+    public static bool IsValidNoteRequest(NoteRequest request)
+    {
+        return !string.IsNullOrEmpty(request.Title) && !string.IsNullOrEmpty(request.Content);
+    }
 }

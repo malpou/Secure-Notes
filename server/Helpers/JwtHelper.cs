@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.IdentityModel.Tokens;
 
 namespace SecureNotes.Functions.Helpers;
@@ -14,7 +15,7 @@ public class JwtHelper
         _secret = secret;
     }
 
-    public string Generate(string userId, string username)
+    public string Generate(string username)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_secret);
@@ -22,7 +23,6 @@ public class JwtHelper
         {
             Subject = new ClaimsIdentity(new[]
             {
-                new Claim("userId", userId),
                 new Claim("username", username)
             }),
             Expires = DateTime.UtcNow.AddHours(3),
@@ -49,5 +49,21 @@ public class JwtHelper
         };
 
         return tokenHandler.ValidateToken(token, validationParameters, out _);
+    }
+
+    public static bool TryExtractTokenFromHeaders(HttpRequestData req, out string extractedToken)
+    {
+        extractedToken = string.Empty;
+
+        if (!req.Headers.Contains("Authorization"))
+            return false;
+
+        extractedToken = req.Headers.GetValues("Authorization").First().Replace("Bearer ", "");
+        return true;
+    }
+
+    public static string? ExtractUsernameFromPrincipal(ClaimsPrincipal principal)
+    {
+        return principal.Claims.FirstOrDefault(c => c.Type == "username")?.Value;
     }
 }
