@@ -26,7 +26,6 @@ public class NoteService
             RowKey = Guid.NewGuid().ToString(),
             Title = newNote.Title,
             Content = encryptedContent,
-            CreatedTime = DateTimeOffset.UtcNow,
             PartitionKey = userId
         };
 

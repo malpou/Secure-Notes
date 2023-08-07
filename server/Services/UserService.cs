@@ -29,7 +29,6 @@ public class UserService
             PartitionKey = username,
             RowKey = Guid.NewGuid().ToString(),
             PasswordHash = passwordHash,
-            CreatedTime = DateTimeOffset.UtcNow
         };
 
         var keyName = "master-key-" + user.RowKey;
