@@ -2,5 +2,5 @@
 
 public class UserResponse
 {
-    public string Token { get; set; }
+    public string Token { get; set; } = string.Empty;
 }
