@@ -1,5 +1,5 @@
 resource "azurerm_key_vault" "vault" {
-  name                            = "secure-notes-vault"
+  name                            = "secure-notes-secrets"
   location                        = azurerm_resource_group.rg.location
   resource_group_name             = azurerm_resource_group.rg.name
   tenant_id                       = data.azurerm_client_config.current.tenant_id
@@ -34,6 +34,22 @@ resource "azurerm_key_vault_secret" "jwt_secret" {
   lifecycle {
     ignore_changes = [value]
   }
+
+  depends_on = [azurerm_key_vault_access_policy.service_principal_access_policy]
+}
+
+resource "azurerm_key_vault_access_policy" "function_app_access_policy" {
+  key_vault_id = azurerm_key_vault.vault.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = azurerm_linux_function_app.function_app.identity[0].principal_id
+
+  secret_permissions = [
+    "Get", "List"
+  ]
+
+  key_permissions = [
+    "Create", "Get", "List", "UnwrapKey", "Encrypt", "Decrypt"
+  ]
 }
 
 resource "azurerm_key_vault_access_policy" "malthe_access_policy" {
