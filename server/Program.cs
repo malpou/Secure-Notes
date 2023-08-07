@@ -15,10 +15,12 @@ var host = new HostBuilder()
             s.AddSingleton(_ => new TableStorageHelper<User>(storageConnectionString!, "users"));
             s.AddSingleton(_ => new TableStorageHelper<Note>(storageConnectionString!, "notes"));
 
+            s.AddSingleton(_ => new KeyHelper(keyVaultUrl!));
             s.AddSingleton(_ => new SecretHelper(keyVaultUrl!));
             s.AddSingleton(_ => new JwtHelper(
                 s.BuildServiceProvider().GetRequiredService<SecretHelper>().GetSecretAsync("jwt-secret").Result
             ));
+            s.AddSingleton<CryptographyHelper>();
 
             s.AddSingleton<UserService>();
             s.AddSingleton<NoteService>();
