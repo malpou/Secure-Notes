@@ -14,19 +14,20 @@ public static class FunctionHelpers
         return JsonConvert.DeserializeObject<T>(request);
     }
 
-    public static async Task<HttpResponseData> CreateJsonResponseAsync<T>(HttpRequestData req, T data, HttpStatusCode statusCode = HttpStatusCode.OK)
+    public static async Task<HttpResponseData> CreateJsonResponseAsync<T>(HttpRequestData req, T data,
+        HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         var response = req.CreateResponse(statusCode);
         response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-        
+
         var serializerSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             Formatting = Formatting.Indented
         };
-        
+
         await response.WriteStringAsync(JsonConvert.SerializeObject(data, serializerSettings));
-        
+
         return response;
     }
 
