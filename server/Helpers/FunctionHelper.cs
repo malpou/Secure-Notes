@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using SecureNotes.Functions.Requests;
 
 namespace SecureNotes.Functions.Helpers;
@@ -13,12 +14,19 @@ public static class FunctionHelpers
         return JsonConvert.DeserializeObject<T>(request);
     }
 
-    public static async Task<HttpResponseData> CreateJsonResponseAsync<T>(HttpRequestData req, T data,
-        HttpStatusCode statusCode = HttpStatusCode.OK)
+    public static async Task<HttpResponseData> CreateJsonResponseAsync<T>(HttpRequestData req, T data, HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         var response = req.CreateResponse(statusCode);
         response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-        await response.WriteStringAsync(JsonConvert.SerializeObject(data, Formatting.Indented));
+        
+        var serializerSettings = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            Formatting = Formatting.Indented
+        };
+        
+        await response.WriteStringAsync(JsonConvert.SerializeObject(data, serializerSettings));
+        
         return response;
     }
 

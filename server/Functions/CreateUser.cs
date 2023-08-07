@@ -17,7 +17,6 @@ public partial class Functions
         FunctionContext executionContext)
     {
         var logger = executionContext.GetLogger("CreateUser");
-        logger.LogInformation("Create user process started");
 
         var loginRequest = await FunctionHelpers.DeserializeRequestBodyAsync<UserRequest>(req);
 
@@ -35,10 +34,9 @@ public partial class Functions
             return req.CreateResponse(HttpStatusCode.Conflict);
         }
 
-        logger.LogInformation("User created: {Username}", loginRequest.Username);
         var userResponse = new UserResponse {Token = token};
 
-        logger.LogInformation("Create user process finished");
+        logger.LogInformation("User created: {Username}", loginRequest.Username);
 
         return await FunctionHelpers.CreateJsonResponseAsync(req, userResponse);
     }

@@ -17,7 +17,6 @@ public partial class Functions
         FunctionContext executionContext)
     {
         var logger = executionContext.GetLogger("Login");
-        logger.LogInformation("Login process started");
 
         var loginRequest = await FunctionHelpers.DeserializeRequestBodyAsync<UserRequest>(req);
 
@@ -35,10 +34,9 @@ public partial class Functions
             return req.CreateResponse(HttpStatusCode.Unauthorized);
         }
 
-        logger.LogInformation("User logged in: {Username}", loginRequest.Username);
         var userResponse = new UserResponse {Token = token};
 
-        logger.LogInformation("Login process finished");
+        logger.LogInformation("User logged in: {Username}", loginRequest.Username);
 
         return await FunctionHelpers.CreateJsonResponseAsync(req, userResponse);
     }
