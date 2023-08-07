@@ -1,8 +1,0 @@
-{
-  "dotnet.defaultSolution": "server/SecureNotes.sln",
-  "azureFunctions.deploySubpath": "server/bin/Release/net7.0/publish",
-  "azureFunctions.projectLanguage": "C#",
-  "azureFunctions.projectRuntime": "~4",
-  "debug.internalConsoleOptions": "neverOpen",
-  "azureFunctions.preDeployTask": "publish (functions)"
-}
