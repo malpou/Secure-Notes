@@ -34,7 +34,7 @@ public class TableStorageHelper<T> where T : BaseEntity, new()
         return entities;
     }
 
-    public async Task<T> GetEntityByPartitionKeyAsync(string partitionKey)
+    public async Task<T?> GetEntityByPartitionKeyAsync(string partitionKey)
     {
         var filter = $"PartitionKey eq '{partitionKey}'";
 
@@ -66,7 +66,7 @@ public class TableStorageHelper<T> where T : BaseEntity, new()
     {
         var filter = $"{columnName} eq '{value}'";
 
-        await foreach (var entity in _tableClient.QueryAsync<T>(filter)) return false;
+        await foreach (var _ in _tableClient.QueryAsync<T>(filter)) return false;
 
         return true;
     }
