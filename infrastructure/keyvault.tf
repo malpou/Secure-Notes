@@ -3,7 +3,7 @@ resource "azurerm_key_vault" "vault" {
   location                        = azurerm_resource_group.rg.location
   resource_group_name             = azurerm_resource_group.rg.name
   tenant_id                       = data.azurerm_client_config.current.tenant_id
-  sku_name                        = "standard"
+  sku_name                        = "premium"
   enabled_for_deployment          = false
   enabled_for_disk_encryption     = false
   enabled_for_template_deployment = false
@@ -19,6 +19,10 @@ resource "azurerm_key_vault_access_policy" "service_principal_access_policy" {
 
   secret_permissions = [
     "Get", "Set", "Purge"
+  ]
+
+  key_permissions = [
+    "Create", "Get", "Delete", "List", "WrapKey", "UnwrapKey", "Encrypt", "Decrypt", "Purge", "Recover"
   ]
 }
 
@@ -39,5 +43,9 @@ resource "azurerm_key_vault_access_policy" "malthe_access_policy" {
 
   secret_permissions = [
     "Get", "Set", "Delete", "List", "Purge", "Recover", "Restore"
+  ]
+
+  key_permissions = [
+    "Create", "Get", "Delete", "List", "WrapKey", "UnwrapKey", "Encrypt", "Decrypt", "Purge", "Recover"
   ]
 }
