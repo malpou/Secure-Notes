@@ -1,0 +1,43 @@
+name: Deploy Secure Notes Function App
+
+on:
+  push:
+    paths:
+      - 'server/**'
+      - '.github/workflows/secure-notes-functions.yml'
+
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'server'
+  DOTNET_VERSION: '7.0.x'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v3
+    
+    - name: 'Login via Azure CLI'
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_RBAC_CREDS }}
+
+    - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 'Resolve Project Dependencies Using Dotnet'
+      shell: bash
+      run: |
+        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        dotnet build --configuration Release --output ./output
+        popd
+
+    - name: 'Run Azure Functions Action'
+      uses: Azure/functions-action@v1
+      id: fa
+      with:
+        app-name: ${{ secrets.SECRET_NOTES_FUNCTION_APP_NAME }}
+        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
