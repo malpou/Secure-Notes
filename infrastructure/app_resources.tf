@@ -35,7 +35,7 @@ resource "azurerm_linux_function_app" "function_app" {
     }
 
     application_stack {
-      dotnet_version = "7.0"
+      dotnet_version              = "7.0"
       use_dotnet_isolated_runtime = true
     }
   }
