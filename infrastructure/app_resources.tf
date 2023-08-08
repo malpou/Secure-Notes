@@ -25,13 +25,18 @@ resource "azurerm_linux_function_app" "function_app" {
 
   app_settings = {
     "KeyVaultUrl" = azurerm_key_vault.vault.vault_uri
+    "WEBSITE_ENABLE_SYNC_UPDATE_SITE" = "true"
   }
 
   site_config {
     application_insights_connection_string = azurerm_application_insights.app_insights.connection_string
+    application_insights_key = azurerm_application_insights.app_insights.instrumentation_key
 
     cors {
-      allowed_origins = ["*"]
+      allowed_origins = [
+        "https://secure-notes.net", 
+        "http://localhost:5173"
+      ]
     }
 
     application_stack {
