@@ -27,9 +27,11 @@
     Updated At: {note.updatedAt.toLocaleString()}
   </Text>
   <Flex justify="right">
-    <Button variant="outline" on:click={() => onEdit(note)}>Edit note</Button>
+    <Button variant="outline" on:click={() => onEdit(note)} ripple
+      >Edit note</Button
+    >
     <Space w="sm" />
-    <Button color="red" variant="outline" on:click={() => onDelete(note)}
+    <Button color="red" variant="outline" on:click={() => onDelete(note)} ripple
       >Delete note</Button
     >
   </Flex>

@@ -53,22 +53,25 @@
     <Container>
       <Flex justify="right">
         {#if $usernameStore}
-          <Button variant="outline" on:click={() => navigate("/")}>Notes</Button
+          <Button variant="outline" on:click={() => navigate("/")} ripple
+            >Notes</Button
           >
           <Space w="sm" />
         {/if}
-        <Button variant="outline" on:click={() => navigate("/about")}
+        <Button variant="outline" on:click={() => navigate("/about")} ripple
           >About</Button
         >
         <Space w="sm" />
         {#if $usernameStore}
-          <Button color="red" variant="outline" on:click={logout}>Logout</Button
+          <Button color="red" variant="outline" on:click={logout} ripple
+            >Logout</Button
           >
         {:else}
           <Button
             color="green"
             variant="outline"
-            on:click={() => navigate("/login")}>Login</Button
+            on:click={() => navigate("/login")}
+            ripple>Login</Button
           >
         {/if}
       </Flex>

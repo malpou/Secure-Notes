@@ -9,25 +9,41 @@
     Title,
     Text,
   } from "@svelteuidev/core"
+  import { createEventDispatcher } from "svelte"
 
   export let opened: boolean
   export let note: Note | null
   export let onClose: () => void
-  export let onSave: (note: Note | null, title: string, content: string) => void
-  
+  export let onSave: (
+    note: Note | null,
+    title: string,
+    content: string
+  ) => Promise<void>
+
+  const dispatch = createEventDispatcher()
+
   let title = ""
   let content = ""
-  let previousNote: Note | null = null;
+  let previousNote: Note | null = null
+  let loading = false
+
+  const save = async (note: Note | null, title: string, content: string) => {
+    loading = true
+    await onSave(note, title, content)
+    loading = false
+  }
+
+  $: dispatch("loadingChanged", loading)
 
   $: {
     if (opened) {
       if (note !== previousNote) {
-        title = note?.title || "";
-        content = note?.content || "";
-        previousNote = note;
+        title = note?.title || ""
+        content = note?.content || ""
+        previousNote = note
       } else if (!note) {
-        title = "";
-        content = "";
+        title = ""
+        content = ""
       }
     }
   }
@@ -45,12 +61,22 @@
   <Textarea bind:value={content} rows={6} />
   <Space h="md" />
   <Flex justify="right">
-    <Button variant="outline" color="gray" on:click={onClose}>Close</Button>
+    <Button
+      variant="outline"
+      color="gray"
+      disabled={loading}
+      on:click={onClose}
+      ripple>Close</Button
+    >
     <Space w="sm" />
     <Button
       variant="outline"
       color="green"
-      on:click={() => onSave(note, title, content)}>Save</Button
+      {loading}
+      on:click={() => save(note, title, content)}
+      ripple
     >
+      Save
+    </Button>
   </Flex>
 </Modal>

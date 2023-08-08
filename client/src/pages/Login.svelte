@@ -15,9 +15,17 @@
   let password = ""
   let usernameError = ""
   let passwordError = ""
+  let loginLoading = false
+  let registerLoading = false
 
   async function handleSubmit(isLogin: boolean) {
     try {
+      if (isLogin) {
+        loginLoading = true
+      } else {
+        registerLoading = true
+      }
+
       const response = isLogin
         ? await api.loginUser(username, password)
         : await api.registerUser(username, password)
@@ -46,6 +54,9 @@
       usernameError = ""
       passwordError = "An unexpected error occurred. Please try again."
     }
+
+    loginLoading = false
+    registerLoading = false
   }
 
   function setCookie(name: string, value: string, hours: number) {
@@ -73,9 +84,20 @@
 <TextInput error={passwordError} bind:value={password} type="password" />
 <Space h="xl" />
 <Flex>
-  <Button color="green" on:click={() => handleSubmit(true)}>Login</Button>
+  <Button
+    color="green"
+    disabled={registerLoading}
+    loading={loginLoading}
+    on:click={() => handleSubmit(true)}
+    ripple>Login</Button
+  >
   <Space w="md" />
-  <Button color="green" variant="light" on:click={() => handleSubmit(false)}
-    >Register</Button
+  <Button
+    color="green"
+    variant="light"
+    disabled={loginLoading}
+    loading={registerLoading}
+    on:click={() => handleSubmit(false)}
+    ripple>Register</Button
   >
 </Flex>

@@ -16,9 +16,12 @@
   let deleteConfirmationOpened = false
   let itemToDelete: "account" | Note | null = null
   let deleteConfirmationMessage: string = ""
+  let modalLoading = false
 
   const closeModal = () => {
-    opened = false
+    if (!modalLoading) {
+      opened = false
+    }
   }
 
   const openModalForEditing = (note: Note) => {
@@ -32,8 +35,10 @@
   }
 
   const closeDeleteConfirmation = () => {
-    deleteConfirmationOpened = false
-    itemToDelete = null
+    if (!modalLoading) {
+      deleteConfirmationOpened = false
+      itemToDelete = null
+    }
   }
 
   const openNoteDeleteConfirmation = (note: Note) => {
@@ -50,12 +55,14 @@
   const confirmDelete = async (item?: Note | "account") => {
     if (!item || (typeof item === "string" && item === "account")) {
       await deleteAccount()
+      modalLoading = false
       closeDeleteConfirmation()
       return
     }
 
-    closeDeleteConfirmation()
     await deleteNote(item)
+    modalLoading = false
+    closeDeleteConfirmation()
   }
 
   const saveNote = async (
@@ -88,9 +95,10 @@
       console.error("Error:", error.message)
     }
 
+    modalLoading = false
     closeModal()
   }
-  
+
   const fetchNotes = async () => {
     isLoading = true
     try {
@@ -156,12 +164,15 @@
   <Title order={1}>Secure notes for <i>{$usernameStore}</i></Title>
   {#if $usernameStore !== null}
     <Flex justify="right">
-      <Button variant="outline" on:click={openModalForNewNote}>New Note</Button>
+      <Button variant="outline" on:click={openModalForNewNote} ripple
+        >New Note</Button
+      >
       <Space w="sm" />
       <Button
         variant="outline"
         color="red"
-        on:click={openAccountDeleteConfirmation}>Delete Account</Button
+        on:click={openAccountDeleteConfirmation}
+        ripple>Delete Account</Button
       >
     </Flex>
   {/if}
@@ -181,6 +192,7 @@
   variant="outline"
   on:click={loadMore}
   disabled={isLoading || allNotesLoaded}
+  ripple
 >
   {allNotesLoaded
     ? "All notes are loaded."
@@ -194,6 +206,7 @@
   note={editingNote}
   onClose={closeModal}
   onSave={saveNote}
+  on:loadingChanged={(e) => (modalLoading = e.detail)}
 />
 
 <DeleteConfirmationModal
@@ -202,4 +215,5 @@
   item={itemToDelete}
   onClose={closeDeleteConfirmation}
   onConfirmDelete={confirmDelete}
+  on:loadingChanged={(e) => (modalLoading = e.detail)}
 />

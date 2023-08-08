@@ -1,11 +1,24 @@
 <script lang="ts">
   import { Modal, Button, Space, Flex, Title, Text } from "@svelteuidev/core"
+  import { createEventDispatcher } from "svelte"
 
   export let opened: boolean
   export let item: "account" | Note | null
   export let message: string = ""
   export let onClose: () => void
-  export let onConfirmDelete: (item?: Note | "account") => void
+  export let onConfirmDelete: (item?: Note | "account") => Promise<void>
+
+  const dispatch = createEventDispatcher()
+
+  let loading = false
+
+  const confirmDelete = async (item?: Note | "account") => {
+    loading = true
+    await onConfirmDelete(item)
+    loading = false
+  }
+
+  $: dispatch("loadingChanged", loading)
 </script>
 
 <Modal {opened} on:close={onClose} withCloseButton={false}>
@@ -19,10 +32,20 @@
   {/if}
   <Space h="md" />
   <Flex justify="right">
-    <Button variant="outline" color="gray" on:click={onClose}>Cancel</Button>
+    <Button
+      variant="outline"
+      color="gray"
+      disabled={loading}
+      on:click={onClose}
+      ripple>Cancel</Button
+    >
     <Space w="sm" />
-    <Button variant="outline" color="red" on:click={() => onConfirmDelete(item)}
-      >Confirm</Button
+    <Button
+      variant="outline"
+      color="red"
+      {loading}
+      on:click={() => confirmDelete(item)}
+      ripple>Confirm</Button
     >
   </Flex>
 </Modal>
