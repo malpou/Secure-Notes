@@ -1,47 +1,55 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+    import { Router, Link, Route } from "svelte-routing";
+    import Notes from "./pages/Notes.svelte";
+    import About from "./pages/About.svelte";
+    import Note from "./pages/Note.svelte";
+    import Login from "./pages/Login.svelte";
+    import {usernameStore, userToken} from "./store";
+
+    export let url = "/";
+
+    let token = getCookie('jwtToken');
+    let username = getCookie('username');
+
+    if (token && username) {
+        userToken.set(token);
+        usernameStore.set(username);
+    }
+
+    function logout() {
+        userToken.set(null);
+        usernameStore.set(null);
+        deleteCookie('jwtToken');
+        deleteCookie('username');
+    }
+
+    function getCookie(name: string) {
+        const value = "; " + document.cookie;
+        const parts = value.split("; " + name + "=");
+        if (parts.length === 2) return parts.pop().split(";").shift();
+    }
+
+    function deleteCookie(name: string) {
+        document.cookie = name + '=; Max-Age=-99999999;';
+    }
 </script>
 
-<main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
-
-<style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
-</style>
+<Router {url}>
+    <nav>
+        <Link to="/">Notes</Link>
+        <Link to="/about">About</Link>
+        {#if $usernameStore}
+            <button on:click={logout}>Logout</button>
+        {:else}
+            <Link to="/login">Login</Link>
+        {/if}
+    </nav>
+    <div>
+        <Route path="/note/:id" let:params>
+            <Note id={params.id} />
+        </Route>
+        <Route path="/login" component={Login} />
+        <Route path="/about" component={About} />
+        <Route path="/"><Notes /></Route>
+    </div>
+</Router>
