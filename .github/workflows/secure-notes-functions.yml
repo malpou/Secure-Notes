@@ -2,6 +2,8 @@ name: Deploy Secure Notes Function App
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'server/**'
       - '.github/workflows/secure-notes-functions.yml'
