@@ -3,22 +3,15 @@
   import { Router, Link, Route } from "svelte-routing"
   import Notes from "./pages/Notes.svelte"
   import About from "./pages/About.svelte"
-  import Note from "./pages/Note.svelte"
   import Login from "./pages/Login.svelte"
   import { usernameStore, userToken } from "./store"
   import {
-    colorScheme,
     SvelteUIProvider,
     Container,
     Button,
     Flex,
     Space,
   } from "@svelteuidev/core"
-
-  function toggleTheme() {
-    colorScheme.update((v) => (v === "light" ? "dark" : "light"))
-  }
-
   export let url = "/"
 
   let token = getCookie("jwtToken")
@@ -47,7 +40,7 @@
   }
 </script>
 
-<SvelteUIProvider withGlobalStyles themeObserver={$colorScheme}>
+<SvelteUIProvider withGlobalStyles>
   <Router {url}>
     <Container>
       <Flex justify="right">
@@ -60,15 +53,10 @@
         {:else}
           <Button><Link to="/login">Login</Link></Button>
         {/if}
-        <Space w="sm" />
-        <Button on:click={toggleTheme}>Change Theme</Button>
       </Flex>
     </Container>
     <Space h="md" />
     <Container>
-      <Route path="/note/:id" let:params>
-        <Note id={params.id} />
-      </Route>
       <Route path="/login" component={Login} />
       <Route path="/about" component={About} />
       <Route path="/"><Notes /></Route>
