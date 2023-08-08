@@ -1,6 +1,7 @@
 name: Deploy Secure Notes Function App
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
