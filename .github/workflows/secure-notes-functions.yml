@@ -7,7 +7,6 @@ on:
       - main
     paths:
       - 'server/**'
-      - '.github/workflows/secure-notes-functions.yml'
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'server'

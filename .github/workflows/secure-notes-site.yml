@@ -1,12 +1,12 @@
 name: Deploy Secure Notes Site
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - 'client/**'
-      - '.github/workflows/secure-notes-site.yml'
 
 jobs:
   build_and_deploy_job:
