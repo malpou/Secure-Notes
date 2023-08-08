@@ -63,7 +63,7 @@ public class NoteService
 
     public async Task<Note?> UpdateAsync(string userId, string noteId, NoteRequest updateRequest)
     {
-        var noteToUpdate = await _tableStorageHelper.GetEntityByColumnAsync("PartitionKey", noteId);
+        var noteToUpdate = await _tableStorageHelper.GetEntityByColumnAsync("RowKey", noteId);
         if (noteToUpdate == null || noteToUpdate.PartitionKey != userId) return null;
 
         noteToUpdate.Title = updateRequest.Title;
@@ -85,7 +85,7 @@ public class NoteService
     {
         try
         {
-            var noteToDelete = await _tableStorageHelper.GetEntityByColumnAsync("PartitionKey", noteId);
+            var noteToDelete = await _tableStorageHelper.GetEntityByColumnAsync("RowKey", noteId);
             if (noteToDelete == null || noteToDelete.PartitionKey != userId) return false;
 
             await _tableStorageHelper.DeleteEntityAsync(userId, noteId);
