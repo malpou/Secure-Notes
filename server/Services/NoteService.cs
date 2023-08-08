@@ -10,7 +10,8 @@ public class NoteService
     private readonly TableStorageHelper<Note> _tableStorageHelper;
     private readonly UserService _userService;
 
-    public NoteService(TableStorageHelper<Note> tableStorageHelper, UserService userService, CryptographyHelper cryptoHelper)
+    public NoteService(TableStorageHelper<Note> tableStorageHelper, UserService userService,
+        CryptographyHelper cryptoHelper)
     {
         _tableStorageHelper = tableStorageHelper;
         _userService = userService;
@@ -20,11 +21,12 @@ public class NoteService
     public async Task<Note> CreateAsync(NoteRequest newNote, string userId)
     {
         var encryptedContent = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(newNote.Content), userId);
+        var encryptedTitle = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(newNote.Title), userId);
 
         var encryptedNote = new Note
         {
             RowKey = Guid.NewGuid().ToString(),
-            Title = newNote.Title,
+            Title = encryptedTitle,
             Content = encryptedContent,
             PartitionKey = userId
         };
@@ -40,50 +42,20 @@ public class NoteService
         return encryptedNote;
     }
 
-    public async Task<IEnumerable<Note>> GetAllAsync(string userId, int page, int pageSize)
+    public async Task<IEnumerable<Note>> GetAllAsync(User user, int page, int pageSize)
     {
-        var notes = (await _tableStorageHelper.GetAllEntitiesAsync())
+        var notes = (await _tableStorageHelper.GetAllEntitiesByColumnAsync("PartitionKey", user.RowKey))
             .OrderByDescending(GetNoteComparisonDate)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
 
-        var cleanedNotes = new List<Note>();
-        
-        var uniquePartitionKeys = notes.Select(note => note.PartitionKey).Distinct().ToList();
-        var userMapping = new Dictionary<string, string>();
-        foreach(var partitionKey in uniquePartitionKeys)
-        {
-            var user = await _userService.GetUserByRowKey(partitionKey);
-            if(user != null)
-            {
-                userMapping[partitionKey] = user.PartitionKey;
-            }
-        }
-
-        if (!string.IsNullOrEmpty(userId))
-        {
-            var decryptedNotes = await Task.WhenAll(notes
-                .Where(note => note.PartitionKey == userId)
-                .Select(note => DecryptNoteAsync(note, userId)));
-            
-            cleanedNotes.AddRange(decryptedNotes);
-        }
-
-        foreach (var note in notes.Where(note => note.PartitionKey != userId))
-        {
-            var contentWithoutKey = note.Content.Split(":")[1];
-            note.Content = contentWithoutKey;
-            
-            cleanedNotes.Add(note);
-        }
+        var cleanedNotes = await Task.WhenAll(notes
+            .Select(note => DecryptNoteAsync(note, user.RowKey)));
 
         foreach (var note in cleanedNotes)
         {
-            if(userMapping.TryGetValue(note.PartitionKey, out var value))
-            {
-                note.Author = value;
-            }
+            note.Author = user.PartitionKey;
         }
 
         return cleanedNotes.OrderByDescending(GetNoteComparisonDate);
@@ -97,7 +69,7 @@ public class NoteService
         noteToUpdate.Title = updateRequest.Title;
         noteToUpdate.Content = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Content), userId);
         noteToUpdate.LastUpdatedTime = DateTimeOffset.UtcNow;
-        
+
         var user = await _userService.GetUserByRowKey(userId);
         if (user != null)
         {
@@ -128,7 +100,9 @@ public class NoteService
     private async Task<Note> DecryptNoteAsync(Note note, string userId)
     {
         var decryptedContent = await _cryptoHelper.DecryptData(note.Content, userId);
+        var decryptedTitle = await _cryptoHelper.DecryptData(note.Title, userId);
         note.Content = decryptedContent;
+        note.Title = decryptedTitle;
         return note;
     }
 

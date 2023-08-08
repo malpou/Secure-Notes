@@ -57,6 +57,16 @@ public class TableStorageHelper<T> where T : BaseEntity, new()
 
         return entities;
     }
+    
+    public async Task<List<T>> GetAllEntitiesByColumnAsync(string columnName, string value)
+    {
+        var entities = new List<T>();
+        var filter = $"{columnName} eq '{value}'";
+
+        await foreach (var entity in _tableClient.QueryAsync<T>(filter)) entities.Add(entity);
+
+        return entities;
+    }
 
     public async Task<bool> IsValueInColumnUniqueAsync(string columnName, string value)
     {

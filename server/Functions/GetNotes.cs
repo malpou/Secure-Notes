@@ -14,14 +14,16 @@ public partial class Functions
         FunctionContext executionContext)
     {
         var logger = executionContext.GetLogger("GetAllNotes");
-        var userId = "";
-
+        
         var tokenInfo = ExtractAndValidateToken(req);
         var user = await FetchUserFromToken(tokenInfo);
-        if (user != null)
-            userId = user.RowKey;
+        if (user == null)
+        {
+            logger.LogWarning("User not found");
+            return GenerateErrorResponse(req, HttpStatusCode.Unauthorized);
+        }
 
-        var notes = await _noteService.GetAllAsync(userId, page ?? 1, pageSize ?? 5);
+        var notes = await _noteService.GetAllAsync(user, page ?? 1, pageSize ?? 5);
         var noteArray = notes as Note[] ?? notes.ToArray();
 
         var noteResponses = noteArray.Select(note => new NoteResponse
