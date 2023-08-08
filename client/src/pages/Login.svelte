@@ -1,71 +1,86 @@
 <script lang="ts">
-    import {usernameStore, userToken} from "../store";
+  import {
+    Button,
+    Flex,
+    Space,
+    TextInput,
+    Title,
+    Text,
+  } from "@svelteuidev/core"
+  import { usernameStore, userToken } from "../store"
 
-    let username = '';
-    let password = '';
-    let errorMessage = '';
+  let username = ""
+  let password = ""
+  let usernameError = ""
+  let passwordError = ""
 
-    async function handleSubmit(isLogin: boolean) {
-        const url = isLogin ? 'https://api.secure-notes.net/login' : 'https://api.secure-notes.net/register';
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
-            });
-            if (response.ok) {
-                const data = await response.json();
-                userToken.set(data.token);
-                usernameStore.set(data.username);
-                setCookie('jwtToken', data.token, 3);
-                setCookie('username', data.username, 3);
-                errorMessage = '';
-            } else if (response.status === 401 && isLogin) {
-                errorMessage = 'Login failed. Please check your username and password.';
-            } else if (response.status === 409 && !isLogin) {
-                errorMessage = 'Username is already in use. Please choose another username.';
-            } else {
-                errorMessage = 'Error logging in/registering. Please try again.';
-            }
-        } catch (error) {
-            console.error("Error during fetch:", error);
-            errorMessage = 'An unexpected error occurred. Please try again.';
-        }
+  async function handleSubmit(isLogin: boolean) {
+    const url = isLogin
+      ? "https://api.secure-notes.net/login"
+      : "https://api.secure-notes.net/register"
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        userToken.set(data.token)
+        usernameStore.set(data.username)
+        setCookie("jwtToken", data.token, 3)
+        setCookie("username", data.username, 3)
+        usernameError = ""
+        passwordError = ""
+      } else if (response.status === 401 && isLogin) {
+        usernameError = ""
+        passwordError = "Login failed. Please check your username and password."
+      } else if (response.status === 409 && !isLogin) {
+        usernameError =
+          "Username is already in use. Please choose another username."
+        passwordError = ""
+      } else {
+        usernameError = ""
+        passwordError = "Error logging in/registering. Please try again."
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error)
+      usernameError = ""
+      passwordError = "An unexpected error occurred. Please try again."
     }
+  }
 
-    function setCookie(name: string, value: string, hours: number) {
-        let expires = "";
-        if (hours) {
-            const date = new Date();
-            date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
-            expires = "; expires=" + date.toUTCString();
-        }
-        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+  function setCookie(name: string, value: string, hours: number) {
+    let expires = ""
+    if (hours) {
+      const date = new Date()
+      date.setTime(date.getTime() + hours * 60 * 60 * 1000)
+      expires = "; expires=" + date.toUTCString()
     }
-
+    document.cookie = name + "=" + (value || "") + expires + "; path=/"
+  }
 </script>
 
-<h2>Login/Register</h2>
-<form>
-    {#if errorMessage}
-        <p class="error">{errorMessage}</p>
-    {/if}
-    <div>
-        <label>Username: <input bind:value={username} /></label>
-    </div>
-    <div>
-        <label>Password: <input type="password" bind:value={password} /></label>
-    </div>
-    <div>
-        <button type="button" on:click={() => handleSubmit(true)}>Login</button>
-        <button type="button" on:click={() => handleSubmit(false)}>Register</button>
-    </div>
-</form>
-
-<style>
-    .error {
-        color: red;
-    }
-</style>
+<Title order={1}>Login/Register</Title>
+<Space h="xl" />
+<Text weight="bold">Username</Text>
+<Space h="xs" />
+<TextInput
+  error={usernameError || passwordError.length > 0}
+  bind:value={username}
+/>
+<Space h="md" />
+<Text weight="bold">Password</Text>
+<Space h="xs" />
+<TextInput error={passwordError} bind:value={password} type="password" />
+<Space h="xl" />
+<Flex>
+  <Button type="button" ripple on:click={() => handleSubmit(true)}>Login</Button
+  >
+  <Space w="md" />
+  <Button type="button" ripple on:click={() => handleSubmit(false)}
+    >Register</Button
+  >
+</Flex>

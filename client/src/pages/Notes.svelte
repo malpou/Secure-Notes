@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { onMount } from "svelte"
   import { Link } from "svelte-routing"
   import { userToken } from "../store"
+  import { Button, Title, Text, Accordion, size, Space } from "@svelteuidev/core"
 
   let notes: Note[] = []
   let page = 1
@@ -25,20 +25,19 @@
   }
 
   async function fetchNotes() {
-    isLoading = true;
+    isLoading = true
     const fetchedNotes = await fetchData<Note[]>(
       `https://api.secure-notes.net/note?page=${page}`
-    );
-    isLoading = false;
+    )
+    isLoading = false
 
-    notes = [...notes, ...fetchedNotes.map(convertTimeZones)];
+    notes = [...notes, ...fetchedNotes.map(convertTimeZones)]
 
     if (fetchedNotes.length < 5) {
-      allNotesLoaded = true;
-      return;
+      allNotesLoaded = true
+      return
     }
-}
-
+  }
 
   function convertTimeZones(note: Note): Note {
     return {
@@ -65,22 +64,32 @@
   }
 </script>
 
-<h1>Notes</h1>
-<ul>
+<Title order={1}>Notes</Title>
+<Space h="xl" />
+<Accordion>
   {#each notes as note}
-    <li>
-      <h2><Link to={`/note/${note.id}`}>{note.title}</Link></h2>
-      <p>{note.content}</p>
-      <small>Created At: {note.createdAt.toLocaleString()}</small>
-      <br />
-      <small>Updated At: {note.updatedAt.toLocaleString()}</small>
-    </li>
+    <Accordion.Item value={note.id}>
+      <Title slot="control" order={3}>{note.title}</Title>
+      <Text>
+        {note.content}
+      </Text>     
+      <Space  h="lg" />
+      <Text size={"sm"}>
+        Created At: {note.createdAt.toLocaleString()}
+      </Text>
+      <Text size={"sm"}>
+        Updated At: {note.updatedAt.toLocaleString()}
+      </Text>
+      <Space  h="lg" />
+      <Button><Link to={`/note/${note.id}`}>Edit note</Link></Button>
+    </Accordion.Item>
   {/each}
-</ul>
-{#if allNotesLoaded}
-  <p>All notes are loaded.</p>
-{:else if isLoading}
-  <p>Loading...</p>
-{:else}
-  <button on:click={loadMore} disabled={isLoading}>Load More</button>
-{/if}
+</Accordion>
+<Space h="xl" />
+<Button on:click={loadMore} disabled={isLoading || allNotesLoaded}
+  >{allNotesLoaded
+    ? "All notes are loaded."
+    : isLoading
+    ? "Loading..."
+    : "Load More"}</Button
+>

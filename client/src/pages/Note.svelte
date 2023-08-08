@@ -1,5 +1,7 @@
 <script lang="ts">
-    export let id: string;
+  import { Title } from "@svelteuidev/core"
+
+  export let id: string
 </script>
 
-<h1>Note {id}</h1>
+<Title order={1}>Note {id}</Title>
