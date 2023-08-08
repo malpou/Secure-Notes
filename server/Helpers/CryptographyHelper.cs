@@ -51,7 +51,6 @@ public class CryptographyHelper
         cryptoStream.Write(data, 0, data.Length);
         cryptoStream.FlushFinalBlock();
 
-        // Concatenate IV for decryption
         var cipherText = memStream.ToArray();
         var result = new byte[aes.IV.Length + cipherText.Length];
         Buffer.BlockCopy(aes.IV, 0, result, 0, aes.IV.Length);
@@ -67,7 +66,6 @@ public class CryptographyHelper
         aes.Mode = CipherMode.CBC;
         aes.Padding = PaddingMode.PKCS7;
 
-        // Extract IV
         var iv = new byte[16];
         Array.Copy(encryptedData, 0, iv, 0, iv.Length);
         var actualCipherText = new byte[encryptedData.Length - iv.Length];
@@ -80,7 +78,6 @@ public class CryptographyHelper
         var plainText = new byte[actualCipherText.Length];
         var bytesRead = cryptoStream.Read(plainText, 0, plainText.Length);
 
-        // Only return the bytes that were actually read.
         var actualPlainText = new byte[bytesRead];
         Array.Copy(plainText, 0, actualPlainText, 0, bytesRead);
 
@@ -89,7 +86,7 @@ public class CryptographyHelper
 
     private static byte[] GenerateRandomKey()
     {
-        var randomKey = new byte[32]; // 256 bits for AES256
+        var randomKey = new byte[32];
         RandomNumberGenerator.Fill(randomKey);
         return randomKey;
     }

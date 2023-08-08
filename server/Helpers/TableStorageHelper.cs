@@ -18,7 +18,7 @@ public class TableStorageHelper<T> where T : BaseEntity, new()
         await _tableClient.AddEntityAsync(entity);
     }
 
-    public async Task<T> GetEntityAsync(string partitionKey, string rowKey)
+    public async Task<T?> GetEntityAsync(string partitionKey, string rowKey)
     {
         var response = await _tableClient.GetEntityAsync<T>(partitionKey, rowKey);
         return response.Value;
