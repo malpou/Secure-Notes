@@ -63,8 +63,8 @@ public class NoteService
 
     public async Task<Note?> UpdateAsync(string userId, string noteId, NoteRequest updateRequest)
     {
-        var noteToUpdate = await _tableStorageHelper.GetEntityAsync(userId, noteId);
-        if (noteToUpdate == null) return null;
+        var noteToUpdate = await _tableStorageHelper.GetEntityByColumnAsync("PartitionKey", noteId);
+        if (noteToUpdate == null || noteToUpdate.PartitionKey != userId) return null;
 
         noteToUpdate.Title = updateRequest.Title;
         noteToUpdate.Content = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Content), userId);
@@ -85,8 +85,8 @@ public class NoteService
     {
         try
         {
-            var noteToDelete = await _tableStorageHelper.GetEntityAsync(userId, noteId);
-            if (noteToDelete == null) return false;
+            var noteToDelete = await _tableStorageHelper.GetEntityByColumnAsync("PartitionKey", noteId);
+            if (noteToDelete == null || noteToDelete.PartitionKey != userId) return false;
 
             await _tableStorageHelper.DeleteEntityAsync(userId, noteId);
             return true;
