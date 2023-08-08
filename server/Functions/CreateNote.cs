@@ -26,6 +26,7 @@ public partial class Functions
         var note = await _noteService.CreateAsync(noteRequest, user.RowKey);
         var noteResponse = new NoteResponse
         {
+            Id = note.RowKey,
             Title = note.Title,
             Content = noteRequest.Content,
             CreatedAt = note.CreatedTime,
