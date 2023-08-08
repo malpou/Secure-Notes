@@ -97,6 +97,12 @@ public class NoteService
         noteToUpdate.Title = updateRequest.Title;
         noteToUpdate.Content = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Content), userId);
         noteToUpdate.LastUpdatedTime = DateTimeOffset.UtcNow;
+        
+        var user = await _userService.GetUserByRowKey(userId);
+        if (user != null)
+        {
+            noteToUpdate.Author = user.PartitionKey;
+        }
 
         await _tableStorageHelper.UpdateEntityAsync(noteToUpdate, noteToUpdate.ETag);
 

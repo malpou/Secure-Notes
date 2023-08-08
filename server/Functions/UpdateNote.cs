@@ -39,7 +39,8 @@ public partial class Functions
                 Title = updatedNote.Title,
                 Content = noteRequest.Content,
                 CreatedAt = updatedNote.CreatedTime,
-                UpdatedAt = updatedNote.LastUpdatedTime
+                UpdatedAt = updatedNote.LastUpdatedTime,
+                Author = updatedNote.Author
             };
 
             LogInformation(logger, "updated", noteId);
