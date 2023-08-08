@@ -7,11 +7,14 @@ public class UserService
 {
     private readonly JwtHelper _jwtHelper;
     private readonly KeyHelper _keyHelper;
+    private readonly NoteService _noteService;
     private readonly TableStorageHelper<User> _tableStorageHelper;
 
-    public UserService(TableStorageHelper<User> tableStorageHelper, JwtHelper jwtHelper, KeyHelper keyHelper)
+    public UserService(TableStorageHelper<User> tableStorageHelper, NoteService noteService, JwtHelper jwtHelper,
+        KeyHelper keyHelper)
     {
         _tableStorageHelper = tableStorageHelper;
+        _noteService = noteService;
         _jwtHelper = jwtHelper;
         _keyHelper = keyHelper;
     }
@@ -57,9 +60,29 @@ public class UserService
 
     public async Task<User?> GetUser(string username)
     {
-        return await _tableStorageHelper.GetEntityByColumnAsync("PartitionKey",username);
+        return await _tableStorageHelper.GetEntityByColumnAsync("PartitionKey", username);
     }
-    
+
+    public async Task<bool> DeleteUser(string username, ILogger log)
+    {
+        var user = await GetUser(username);
+        if (user == null) return false;
+
+        // Remove all associated notes
+        if (!await _noteService.DeleteAllNotes(user))
+            log.LogError("Failed to delete all notes for user {Username} ({UserId})", username, user.RowKey);
+
+        // Remove the associated key
+        var keyName = "master-key-" + user.RowKey;
+        await _keyHelper.DeleteKeyAsync(keyName);
+
+        // Delete the user
+        await _tableStorageHelper.DeleteEntityAsync(user.PartitionKey, user.RowKey);
+
+        return true;
+    }
+
+
     public Task<User?> GetUserByRowKey(string rowKey)
     {
         return _tableStorageHelper.GetEntityByColumnAsync("RowKey", rowKey);

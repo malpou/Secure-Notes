@@ -14,7 +14,7 @@ public partial class Functions
         FunctionContext executionContext)
     {
         var logger = executionContext.GetLogger("GetAllNotes");
-        
+
         var tokenInfo = ExtractAndValidateToken(req);
         var user = await FetchUserFromToken(tokenInfo);
         if (user == null)
@@ -33,7 +33,6 @@ public partial class Functions
             Content = note.Content,
             CreatedAt = note.CreatedTime,
             UpdatedAt = note.LastUpdatedTime,
-            Author = note.Author
         }).ToList();
 
         logger.LogInformation("Notes retrieved: {Count}", noteArray.Length);

@@ -1,26 +1,36 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
+﻿namespace SecureNotes.Functions;
 
-namespace SecureNotes.Functions;
-
-public static class DeleteUser
+public partial class Functions
 {
     [Function("DeleteUser")]
-    public static HttpResponseData Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req,
+    public async Task<HttpResponseData> DeleteUser(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "account")]
+        HttpRequestData req,
         FunctionContext executionContext)
     {
         var logger = executionContext.GetLogger("DeleteUser");
-        logger.LogInformation("C# HTTP trigger function processed a request.");
+        var tokenInfo = ExtractAndValidateToken(req);
+        var user = await FetchUserFromToken(tokenInfo);
 
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
+        if (user == null)
+            return GenerateErrorResponse(req, HttpStatusCode.Unauthorized);
 
-        response.WriteString("Welcome to Azure Functions!");
+        bool isDeleted;
+        try
+        {
+            isDeleted = await _userService.DeleteUser(user.PartitionKey, logger);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error deleting user: {Username}", user.PartitionKey);
+            return req.CreateResponse(HttpStatusCode.InternalServerError);
+        }
 
-        return response;
-        
+        if (!isDeleted)
+            return req.CreateResponse(HttpStatusCode.NotFound);
+
+        logger.LogInformation("User deleted: {Username}", user.PartitionKey);
+
+        return req.CreateResponse(HttpStatusCode.NoContent);
     }
 }

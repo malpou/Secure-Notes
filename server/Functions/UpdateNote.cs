@@ -26,7 +26,7 @@ public partial class Functions
 
         try
         {
-            var updatedNote = await _noteService.UpdateAsync(user.RowKey, noteId, noteRequest);
+            var updatedNote = await _noteService.UpdateAsync(user, noteId, noteRequest);
             if (updatedNote == null)
             {
                 logger.LogWarning("Note with ID {NoteId} not found", noteId);
@@ -36,11 +36,10 @@ public partial class Functions
             var noteResponse = new NoteResponse
             {
                 Id = updatedNote.RowKey,
-                Title = updatedNote.Title,
+                Title = noteRequest.Title,
                 Content = noteRequest.Content,
                 CreatedAt = updatedNote.CreatedTime,
                 UpdatedAt = updatedNote.LastUpdatedTime,
-                Author = updatedNote.Author
             };
 
             LogInformation(logger, "updated", noteId);

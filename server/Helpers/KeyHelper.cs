@@ -36,4 +36,13 @@ public class KeyHelper
         var key = await _keyClient.GetKeyAsync("master-key-" + keyName);
         return key.Value;
     }
+
+    public async Task DeleteKeyAsync(string keyName)
+    {
+        var deleteOperation = await _keyClient.StartDeleteKeyAsync(keyName);
+
+        await deleteOperation.WaitForCompletionAsync();
+
+        await _keyClient.PurgeDeletedKeyAsync(keyName);
+    }
 }

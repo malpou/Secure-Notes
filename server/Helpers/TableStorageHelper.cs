@@ -15,7 +15,7 @@ public class TableStorageHelper<T> where T : BaseEntity, new()
     {
         await _tableClient.AddEntityAsync(entity);
     }
-    
+
     public async Task<T?> GetEntityByColumnAsync(string columnName, string value)
     {
         var filter = $"{columnName} eq '{value}'";
@@ -24,7 +24,7 @@ public class TableStorageHelper<T> where T : BaseEntity, new()
 
         return null;
     }
-    
+
     public async Task<List<T>> GetAllEntitiesByColumnAsync(string columnName, string value)
     {
         var entities = new List<T>();
@@ -34,7 +34,7 @@ public class TableStorageHelper<T> where T : BaseEntity, new()
 
         return entities;
     }
-    
+
     public async Task UpdateEntityAsync(T entity, ETag eTag)
     {
         await _tableClient.UpdateEntityAsync(entity, eTag);

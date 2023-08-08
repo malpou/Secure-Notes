@@ -8,39 +8,32 @@ public class NoteService
 {
     private readonly CryptographyHelper _cryptoHelper;
     private readonly TableStorageHelper<Note> _tableStorageHelper;
-    private readonly UserService _userService;
 
-    public NoteService(TableStorageHelper<Note> tableStorageHelper, UserService userService,
+    public NoteService(TableStorageHelper<Note> tableStorageHelper,
         CryptographyHelper cryptoHelper)
     {
         _tableStorageHelper = tableStorageHelper;
-        _userService = userService;
         _cryptoHelper = cryptoHelper;
     }
 
-    public async Task<Note> CreateAsync(NoteRequest newNote, string userId)
+    public async Task<Note> CreateAsync(NoteRequest newNote, User user)
     {
-        var encryptedContent = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(newNote.Content), userId);
-        var encryptedTitle = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(newNote.Title), userId);
+        var encryptedContent = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(newNote.Content), user.RowKey);
+        var encryptedTitle = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(newNote.Title), user.RowKey);
 
         var encryptedNote = new Note
         {
             RowKey = Guid.NewGuid().ToString(),
             Title = encryptedTitle,
             Content = encryptedContent,
-            PartitionKey = userId
+            PartitionKey = user.RowKey
         };
 
         await _tableStorageHelper.AddEntityAsync(encryptedNote);
 
-        var user = await _userService.GetUserByRowKey(userId);
-        if (user != null)
-        {
-            encryptedNote.Author = user.PartitionKey;
-        }
-
         return encryptedNote;
     }
+
 
     public async Task<IEnumerable<Note>> GetAllAsync(User user, int page, int pageSize)
     {
@@ -52,32 +45,25 @@ public class NoteService
 
         var cleanedNotes = await Task.WhenAll(notes
             .Select(note => DecryptNoteAsync(note, user.RowKey)));
-
-        foreach (var note in cleanedNotes)
-        {
-            note.Author = user.PartitionKey;
-        }
-
+        
         return cleanedNotes.OrderByDescending(GetNoteComparisonDate);
     }
 
-    public async Task<Note?> UpdateAsync(string userId, string noteId, NoteRequest updateRequest)
+    public async Task<Note?> UpdateAsync(User user, string noteId, NoteRequest updateRequest)
     {
         var noteToUpdate = await _tableStorageHelper.GetEntityByColumnAsync("RowKey", noteId);
-        if (noteToUpdate == null || noteToUpdate.PartitionKey != userId) return null;
+        if (noteToUpdate == null || noteToUpdate.PartitionKey != user.RowKey) return null;
 
-        noteToUpdate.Title = updateRequest.Title;
-        noteToUpdate.Content = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Content), userId);
+        var encryptedContent =
+            await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Content), user.RowKey);
+        var encryptedTitle = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Title), user.RowKey);
+
+        noteToUpdate.Content = encryptedContent;
+        noteToUpdate.Title = encryptedTitle;
         noteToUpdate.LastUpdatedTime = DateTimeOffset.UtcNow;
 
-        var user = await _userService.GetUserByRowKey(userId);
-        if (user != null)
-        {
-            noteToUpdate.Author = user.PartitionKey;
-        }
-
         await _tableStorageHelper.UpdateEntityAsync(noteToUpdate, noteToUpdate.ETag);
-
+        
         return noteToUpdate;
     }
 
@@ -95,6 +81,17 @@ public class NoteService
         {
             return false;
         }
+    }
+
+    public async Task<bool> DeleteAllNotes(User user)
+    {
+        var notes = await _tableStorageHelper.GetAllEntitiesByColumnAsync("PartitionKey", user.RowKey);
+
+        if (!notes.Any()) return false;
+
+        await Task.WhenAll(notes.Select(note => _tableStorageHelper.DeleteEntityAsync(note.PartitionKey, note.RowKey)));
+
+        return true;
     }
 
     private async Task<Note> DecryptNoteAsync(Note note, string userId)

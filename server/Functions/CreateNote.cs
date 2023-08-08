@@ -23,7 +23,7 @@ public partial class Functions
         if (noteRequest == null || !IsValidNoteRequest(noteRequest))
             return GenerateErrorResponse(req, HttpStatusCode.BadRequest);
 
-        var note = await _noteService.CreateAsync(noteRequest, user.RowKey);
+        var note = await _noteService.CreateAsync(noteRequest, user);
         var noteResponse = new NoteResponse
         {
             Id = note.RowKey,
@@ -31,7 +31,6 @@ public partial class Functions
             Content = noteRequest.Content,
             CreatedAt = note.CreatedTime,
             UpdatedAt = note.LastUpdatedTime,
-            Author = note.Author
         };
 
         LogInformation(logger, "created", note.RowKey);
