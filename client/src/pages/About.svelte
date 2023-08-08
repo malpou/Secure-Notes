@@ -2,4 +2,4 @@
   import { Title } from "@svelteuidev/core"
 
 </script>
-<Title order={1}>Secure Notes</Title>
+<Title order={1}>About</Title>

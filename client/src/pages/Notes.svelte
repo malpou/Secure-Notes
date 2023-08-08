@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as api from '../api';
   import EditNoteModal from "../components/EditNoteModal.svelte"
   import NoteComponent from "../components/NoteComponent.svelte"
   import { userToken, usernameStore } from "../store"
@@ -25,75 +26,20 @@
     opened = true
   }
 
-  const saveNote = async (
-    note: Note | null,
-    title: string,
-    content: string
-  ) => {
-    if (!note) {
-      try {
-        const headers: Record<string, string> = {}
-
-        if ($userToken !== null) {
-          headers["Authorization"] = `Bearer ${$userToken}`
-        }
-
-        const newNoteData = {
+  async function saveNote(note: Note | null, title: string, content: string) {
+    try {
+      if (!note) {
+        const newNote = await api.createNote(title, content, $userToken)
+        notes = [convertTimeZones(newNote), ...notes]
+      } else {
+        const updatedNote = await api.updateNote(
+          note.id,
           title,
           content,
-        }
-
-        const response = await fetch(`https://api.secure-notes.net/note`, {
-          method: "POST",
-          headers: {
-            ...headers,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newNoteData),
-        })
-
-        if (!response.ok) {
-          throw new Error("Failed to create note")
-        }
-
-        const newNote = await response.json()
-
-        notes = [convertTimeZones(newNote), ...notes]
-      } catch (error) {
-        console.error("Error creating note:", error)
-      }
-    } else {
-      try {
-        const headers: Record<string, string> = {}
-
-        if ($userToken !== null) {
-          headers["Authorization"] = `Bearer ${$userToken}`
-        }
-
-        const updatedNoteData = {
-          title: title,
-          content: content,
-        }
-
-        const response = await fetch(
-          `https://api.secure-notes.net/note/${note.id}`,
-          {
-            method: "PUT",
-            headers: {
-              ...headers,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedNoteData),
-          }
+          $userToken
         )
 
-        if (!response.ok) {
-          throw new Error("Failed to update note")
-        }
-
-        const updatedNote = await response.json()
-
-        const noteIndex = notes.findIndex((note) => note.id === updatedNote.id)
+        const noteIndex = notes.findIndex((n) => n.id === updatedNote.id)
         if (noteIndex !== -1) {
           notes = [
             ...notes.slice(0, noteIndex),
@@ -101,68 +47,36 @@
             ...notes.slice(noteIndex + 1),
           ]
         }
-      } catch (error) {
-        console.error("Error updating note:", error)
       }
+    } catch (error) {
+      console.error("Error:", error.message)
     }
 
     closeModal()
   }
 
-  const deleteNote = async (note: Note) => {
+  async function deleteNote(note: Note) {
     try {
-      const headers: Record<string, string> = {}
-
-      if ($userToken !== null) {
-        headers["Authorization"] = `Bearer ${$userToken}`
-      }
-
-      const response = await fetch(
-        `https://api.secure-notes.net/note/${note.id}`,
-        {
-          method: "DELETE",
-          headers,
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error("Failed to delete note")
-      }
-
+      await api.deleteNote(note.id, $userToken)
       notes = notes.filter((n) => n.id !== note.id)
     } catch (error) {
       console.error("Error deleting note:", error)
     }
   }
 
-  async function fetchData<T>(url: string): Promise<T> {
-    const headers: Record<string, string> = {}
-
-    if ($userToken !== null) {
-      headers["Authorization"] = `Bearer ${$userToken}`
-    }
-
-    const response = await fetch(url, { headers })
-
-    if (!response.ok) {
-      throw new Error("Network response was not ok")
-    }
-
-    return response.json()
-  }
-
   async function fetchNotes() {
     isLoading = true
-    const fetchedNotes = await fetchData<Note[]>(
-      `https://api.secure-notes.net/note?page=${page}`
-    )
-    isLoading = false
+    try {
+      const fetchedNotes = await api.fetchNotes(page, $userToken)
+      notes = [...notes, ...fetchedNotes.map(convertTimeZones)]
 
-    notes = [...notes, ...fetchedNotes.map(convertTimeZones)]
-
-    if (fetchedNotes.length < 5) {
-      allNotesLoaded = true
-      return
+      if (fetchedNotes.length < 5) {
+        allNotesLoaded = true
+      }
+    } catch (error) {
+      console.error("Error fetching notes:", error)
+    } finally {
+      isLoading = false
     }
   }
 
@@ -192,7 +106,7 @@
 </script>
 
 <Flex justify="space-between">
-  <Title order={1}>Notes</Title>
+  <Title order={1}>Secret Notes</Title>
   {#if $usernameStore !== null}
     <Button variant="outline" on:click={openModalForNewNote}>New Note</Button>
   {/if}
