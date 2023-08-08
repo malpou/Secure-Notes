@@ -68,15 +68,12 @@ public class UserService
         var user = await GetUser(username);
         if (user == null) return false;
 
-        // Remove all associated notes
         if (!await _noteService.DeleteAllNotes(user))
             log.LogError("Failed to delete all notes for user {Username} ({UserId})", username, user.RowKey);
 
-        // Remove the associated key
         var keyName = "master-key-" + user.RowKey;
         await _keyHelper.DeleteKeyAsync(keyName);
 
-        // Delete the user
         await _tableStorageHelper.DeleteEntityAsync(user.PartitionKey, user.RowKey);
 
         return true;

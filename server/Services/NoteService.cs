@@ -86,8 +86,8 @@ public class NoteService
     public async Task<bool> DeleteAllNotes(User user)
     {
         var notes = await _tableStorageHelper.GetAllEntitiesByColumnAsync("PartitionKey", user.RowKey);
-
-        if (!notes.Any()) return false;
+        
+        if (!notes.Any()) return true;
 
         await Task.WhenAll(notes.Select(note => _tableStorageHelper.DeleteEntityAsync(note.PartitionKey, note.RowKey)));
 
