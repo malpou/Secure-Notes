@@ -2,7 +2,6 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using SecureNotes.Functions.Helpers;
 using SecureNotes.Functions.Requests;
 using SecureNotes.Functions.Responses;
 
@@ -18,9 +17,9 @@ public partial class Functions
     {
         var logger = executionContext.GetLogger("Login");
 
-        var loginRequest = await FunctionHelpers.DeserializeRequestBodyAsync<UserRequest>(req);
+        var loginRequest = await DeserializeRequestBodyAsync<UserRequest>(req);
 
-        if (loginRequest == null || !FunctionHelpers.IsValidUserRequest(loginRequest))
+        if (loginRequest == null || !IsValidUserRequest(loginRequest))
             return req.CreateResponse(HttpStatusCode.BadRequest);
 
         string token;
@@ -38,6 +37,6 @@ public partial class Functions
 
         logger.LogInformation("User logged in: {Username}", loginRequest.Username);
 
-        return await FunctionHelpers.CreateJsonResponseAsync(req, userResponse);
+        return await CreateJsonResponseAsync(req, userResponse);
     }
 }

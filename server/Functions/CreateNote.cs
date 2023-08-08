@@ -1,8 +1,6 @@
 ﻿using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using SecureNotes.Functions.Helpers;
 using SecureNotes.Functions.Requests;
 using SecureNotes.Functions.Responses;
 
@@ -17,28 +15,18 @@ public partial class Functions
         FunctionContext executionContext)
     {
         var logger = executionContext.GetLogger("CreateNote");
+        var tokenInfo = ExtractAndValidateToken(req);
+        var user = await FetchUserFromToken(tokenInfo);
 
-        if (!JwtHelper.TryExtractTokenFromHeaders(req, out var token))
-            return req.CreateResponse(HttpStatusCode.Unauthorized);
+        if (user == null)
+            return GenerateErrorResponse(req, HttpStatusCode.Unauthorized);
 
-        var principal = _jwtHelper.Validate(token);
+        var noteRequest = await DeserializeRequestBodyAsync<NoteRequest>(req);
 
-        var username = JwtHelper.ExtractUsernameFromPrincipal(principal);
-        if (username == null) return req.CreateResponse(HttpStatusCode.Unauthorized);
+        if (noteRequest == null || !IsValidNoteRequest(noteRequest))
+            return GenerateErrorResponse(req, HttpStatusCode.BadRequest);
 
-        var noteRequest = await FunctionHelpers.DeserializeRequestBodyAsync<NoteRequest>(req);
-
-        if (noteRequest == null || !FunctionHelpers.IsValidNoteRequest(noteRequest))
-            return req.CreateResponse(HttpStatusCode.BadRequest);
-
-        var user = await _userService.GetUser(username);
-        if (user == null) return req.CreateResponse(HttpStatusCode.Unauthorized);
-
-
-        var note = await _noteService.CreateAsync(
-            noteRequest,
-            user.RowKey);
-
+        var note = await _noteService.CreateAsync(noteRequest, user.RowKey);
         var noteResponse = new NoteResponse
         {
             Title = note.Title,
@@ -47,8 +35,7 @@ public partial class Functions
             UpdatedAt = note.LastUpdatedTime
         };
 
-        logger.LogInformation("Note created: {Title} ({Id})", note.Title, note.RowKey);
-
-        return await FunctionHelpers.CreateJsonResponseAsync(req, noteResponse);
+        LogInformation(logger, "created", note.RowKey);
+        return await CreateJsonResponseAsync(req, noteResponse);
     }
 }
