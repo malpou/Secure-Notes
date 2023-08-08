@@ -106,7 +106,7 @@
 </script>
 
 <Flex justify="space-between">
-  <Title order={1}>Secret Notes</Title>
+  <Title order={1}>Secure notes for <i>{$usernameStore}</i></Title>
   {#if $usernameStore !== null}
     <Button variant="outline" on:click={openModalForNewNote}>New Note</Button>
   {/if}

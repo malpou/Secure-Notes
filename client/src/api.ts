@@ -1,4 +1,32 @@
-const BASE_URL = "https://api.secure-notes.net/note"
+const BASE_URL = "https://api.secure-notes.net"
+
+export async function loginUser(username: string, password: string) {
+  const response = await fetch(`${BASE_URL}/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ username, password }),
+  })
+  if (!response.ok && response.status !== 401) {
+    throw new Error("Error logging in")
+  }
+  return response
+}
+
+export async function registerUser(username: string, password: string) {
+  const response = await fetch(`${BASE_URL}/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ username, password }),
+  })
+  if (!response.ok && response.status !== 409) {
+    throw new Error("Error registering")
+  }
+  return response
+}
 
 export async function createNote(
   title: string,
@@ -13,7 +41,7 @@ export async function createNote(
     headers["Authorization"] = `Bearer ${token}`
   }
 
-  const response = await fetch(BASE_URL, {
+  const response = await fetch(`${BASE_URL}/note`, {
     method: "POST",
     headers,
     body: JSON.stringify({ title, content }),
@@ -40,7 +68,7 @@ export async function updateNote(
     headers["Authorization"] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${BASE_URL}/${noteId}`, {
+  const response = await fetch(`${BASE_URL}/note/${noteId}`, {
     method: "PUT",
     headers,
     body: JSON.stringify({ title, content }),
@@ -60,7 +88,7 @@ export async function deleteNote(noteId: string, token?: string) {
     headers["Authorization"] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${BASE_URL}/${noteId}`, {
+  const response = await fetch(`${BASE_URL}/note/${noteId}`, {
     method: "DELETE",
     headers,
   })
@@ -79,7 +107,7 @@ export async function fetchNotes(page: number, token?: string) {
     headers["Authorization"] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${BASE_URL}?page=${page}`, { headers })
+  const response = await fetch(`${BASE_URL}/note?page=${page}`, { headers })
 
   if (!response.ok) {
     throw new Error("Network response was not ok")

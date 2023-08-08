@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as api from "../api"
   import {
     Button,
     Flex,
@@ -16,17 +17,11 @@
   let passwordError = ""
 
   async function handleSubmit(isLogin: boolean) {
-    const url = isLogin
-      ? "https://api.secure-notes.net/login"
-      : "https://api.secure-notes.net/register"
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      })
+      const response = isLogin
+        ? await api.loginUser(username, password)
+        : await api.registerUser(username, password)
+
       if (response.ok) {
         const data = await response.json()
         userToken.set(data.token)
@@ -48,7 +43,6 @@
         passwordError = "Error logging in/registering. Please try again."
       }
     } catch (error) {
-      console.error("Error during fetch:", error)
       usernameError = ""
       passwordError = "An unexpected error occurred. Please try again."
     }
@@ -79,8 +73,7 @@
 <TextInput error={passwordError} bind:value={password} type="password" />
 <Space h="xl" />
 <Flex>
-  <Button color="green" on:click={() => handleSubmit(true)}>Login</Button
-  >
+  <Button color="green" on:click={() => handleSubmit(true)}>Login</Button>
   <Space w="md" />
   <Button color="green" variant="light" on:click={() => handleSubmit(false)}
     >Register</Button

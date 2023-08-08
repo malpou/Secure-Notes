@@ -12,15 +12,9 @@
     Flex,
     Space,
   } from "@svelteuidev/core"
+  import { onMount } from "svelte"
+
   export let url = "/"
-
-  let token = getCookie("jwtToken")
-  let username = getCookie("username")
-
-  if (token && username) {
-    userToken.set(token)
-    usernameStore.set(username)
-  }
 
   function logout() {
     userToken.set(null)
@@ -36,6 +30,19 @@
     if (parts.length === 2) return parts.pop().split(";").shift()
   }
 
+  onMount(() => {
+    let token = getCookie("jwtToken")
+    let username = getCookie("username")
+
+    if (token && username) {
+      userToken.set(token)
+      usernameStore.set(username)
+      navigate("/")
+    } else {
+      navigate("/login")
+    }
+  })
+
   function deleteCookie(name: string) {
     document.cookie = name + "=; Max-Age=-99999999;"
   }
@@ -45,22 +52,35 @@
   <Router {url}>
     <Container>
       <Flex justify="right">
-        <Button variant="outline" on:click={() => navigate("/")}>Notes</Button>
-        <Space w="sm" />
-        <Button variant="outline" on:click={() => navigate("/about")} >About</Button>
+        {#if $usernameStore}
+          <Button variant="outline" on:click={() => navigate("/")}>Notes</Button
+          >
+          <Space w="sm" />
+        {/if}
+        <Button variant="outline" on:click={() => navigate("/about")}
+          >About</Button
+        >
         <Space w="sm" />
         {#if $usernameStore}
-          <Button color="red" variant="outline" on:click={logout}>Logout</Button>
+          <Button color="red" variant="outline" on:click={logout}>Logout</Button
+          >
         {:else}
-          <Button color="green" variant="outline" on:click={() => navigate("/login")}>Login</Button>
+          <Button
+            color="green"
+            variant="outline"
+            on:click={() => navigate("/login")}>Login</Button
+          >
         {/if}
       </Flex>
     </Container>
     <Space h="md" />
     <Container>
-      <Route path="/login" component={Login} />
+      {#if $userToken && $usernameStore}
+        <Route path="/"><Notes /></Route>
+      {:else}
+        <Route path="/login" component={Login} />
+      {/if}
       <Route path="/about" component={About} />
-      <Route path="/"><Notes /></Route>
     </Container>
   </Router>
 </SvelteUIProvider>
