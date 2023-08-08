@@ -22,16 +22,6 @@ public class TableStorageHelper<T> where T : BaseEntity, new()
         return response.Value;
     }
 
-    public async Task<List<T>> GetEntitiesByPartitionKeyAsync(string partitionKey)
-    {
-        var entities = new List<T>();
-        var filter = $"PartitionKey eq '{partitionKey}'";
-
-        await foreach (var entity in _tableClient.QueryAsync<T>(filter)) entities.Add(entity);
-
-        return entities;
-    }
-
     public async Task<T?> GetEntityByPartitionKeyAsync(string partitionKey)
     {
         var filter = $"PartitionKey eq '{partitionKey}'";
@@ -40,8 +30,16 @@ public class TableStorageHelper<T> where T : BaseEntity, new()
 
         return null;
     }
+    
+    public async Task<T?> GetEntityByColumnAsync(string columnName, string value)
+    {
+        var filter = $"{columnName} eq '{value}'";
 
+        await foreach (var entity in _tableClient.QueryAsync<T>(filter)) return entity;
 
+        return null;
+    }
+    
     public async Task UpdateEntityAsync(T entity, ETag eTag)
     {
         await _tableClient.UpdateEntityAsync(entity, eTag);

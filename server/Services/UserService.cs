@@ -59,4 +59,9 @@ public class UserService
     {
         return await _tableStorageHelper.GetEntityByPartitionKeyAsync(username);
     }
+    
+    public Task<User?> GetUserByRowKey(string rowKey)
+    {
+        return _tableStorageHelper.GetEntityByColumnAsync("RowKey", rowKey);
+    }
 }

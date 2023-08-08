@@ -8,10 +8,12 @@ public class NoteService
 {
     private readonly CryptographyHelper _cryptoHelper;
     private readonly TableStorageHelper<Note> _tableStorageHelper;
+    private readonly UserService _userService;
 
-    public NoteService(TableStorageHelper<Note> tableStorageHelper, CryptographyHelper cryptoHelper)
+    public NoteService(TableStorageHelper<Note> tableStorageHelper, UserService userService, CryptographyHelper cryptoHelper)
     {
         _tableStorageHelper = tableStorageHelper;
+        _userService = userService;
         _cryptoHelper = cryptoHelper;
     }
 
@@ -29,6 +31,12 @@ public class NoteService
 
         await _tableStorageHelper.AddEntityAsync(encryptedNote);
 
+        var user = await _userService.GetUserByRowKey(userId);
+        if (user != null)
+        {
+            encryptedNote.Author = user.PartitionKey;
+        }
+
         return encryptedNote;
     }
 
@@ -41,13 +49,24 @@ public class NoteService
             .ToList();
 
         var cleanedNotes = new List<Note>();
+        
+        var uniquePartitionKeys = notes.Select(note => note.PartitionKey).Distinct().ToList();
+        var userMapping = new Dictionary<string, string>();
+        foreach(var partitionKey in uniquePartitionKeys)
+        {
+            var user = await _userService.GetUserByRowKey(partitionKey);
+            if(user != null)
+            {
+                userMapping[partitionKey] = user.PartitionKey;
+            }
+        }
 
         if (!string.IsNullOrEmpty(userId))
         {
             var decryptedNotes = await Task.WhenAll(notes
                 .Where(note => note.PartitionKey == userId)
                 .Select(note => DecryptNoteAsync(note, userId)));
-
+            
             cleanedNotes.AddRange(decryptedNotes);
         }
 
@@ -55,8 +74,16 @@ public class NoteService
         {
             var contentWithoutKey = note.Content.Split(":")[1];
             note.Content = contentWithoutKey;
-
+            
             cleanedNotes.Add(note);
+        }
+
+        foreach (var note in cleanedNotes)
+        {
+            if(userMapping.TryGetValue(note.PartitionKey, out var value))
+            {
+                note.Author = value;
+            }
         }
 
         return cleanedNotes.OrderByDescending(GetNoteComparisonDate);
