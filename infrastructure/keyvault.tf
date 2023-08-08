@@ -48,7 +48,7 @@ resource "azurerm_key_vault_access_policy" "function_app_access_policy" {
   ]
 
   key_permissions = [
-    "Create", "Get", "List", "UnwrapKey", "Encrypt", "Decrypt", "Purge"
+    "Create", "Get", "Delete", "List", "UnwrapKey", "Encrypt", "Decrypt", "Purge"
   ]
 }
 
