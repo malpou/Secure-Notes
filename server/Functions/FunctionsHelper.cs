@@ -1,10 +1,4 @@
-﻿using System.Net;
-using System.Security.Claims;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using SecureNotes.Functions.Entities;
+﻿using SecureNotes.Functions.Entities;
 using SecureNotes.Functions.Helpers;
 using SecureNotes.Functions.Requests;
 
@@ -76,7 +70,7 @@ public partial class Functions
 
     public class UserToken
     {
-        public ClaimsPrincipal? Principal { get; set; }
-        public string? Username { get; set; }
+        public ClaimsPrincipal? Principal { get; init; }
+        public string? Username { get; init; }
     }
 }

@@ -1,7 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-
-namespace SecureNotes.Functions.Helpers;
+﻿namespace SecureNotes.Functions.Helpers;
 
 public class CryptographyHelper
 {

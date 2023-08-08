@@ -1,6 +1,6 @@
 ﻿namespace SecureNotes.Functions.Helpers;
 
-public class HashingHelper
+public static class HashingHelper
 {
     public static string HashPassword(string password)
     {

@@ -1,6 +1,4 @@
-﻿using System.Text;
-using Azure;
-using SecureNotes.Functions.Entities;
+﻿using SecureNotes.Functions.Entities;
 using SecureNotes.Functions.Helpers;
 using SecureNotes.Functions.Requests;
 

@@ -1,5 +1,4 @@
-﻿using Azure.Security.KeyVault.Keys;
-using SecureNotes.Functions.Entities;
+﻿using SecureNotes.Functions.Entities;
 using SecureNotes.Functions.Helpers;
 
 namespace SecureNotes.Functions.Services;

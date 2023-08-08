@@ -1,7 +1,4 @@
-﻿using System.Net;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using SecureNotes.Functions.Requests;
+﻿using SecureNotes.Functions.Requests;
 using SecureNotes.Functions.Responses;
 
 namespace SecureNotes.Functions;

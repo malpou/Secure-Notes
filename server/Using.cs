@@ -1,0 +1,17 @@
+﻿global using Azure;
+global using Azure.Data.Tables;
+global using Azure.Identity;
+global using Azure.Security.KeyVault.Keys;
+global using Azure.Security.KeyVault.Keys.Cryptography;
+global using Azure.Security.KeyVault.Secrets;
+global using Microsoft.Azure.Functions.Worker;
+global using Microsoft.Azure.Functions.Worker.Http;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.IdentityModel.Tokens;
+global using Newtonsoft.Json;
+global using Newtonsoft.Json.Serialization;
+global using System.IdentityModel.Tokens.Jwt;
+global using System.Net;
+global using System.Security.Claims;
+global using System.Security.Cryptography;
+global using System.Text;

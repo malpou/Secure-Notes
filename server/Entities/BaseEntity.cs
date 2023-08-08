@@ -1,7 +1,4 @@
-﻿using Azure;
-using Azure.Data.Tables;
-
-namespace SecureNotes.Functions.Entities;
+﻿namespace SecureNotes.Functions.Entities;
 
 public class BaseEntity : ITableEntity
 {

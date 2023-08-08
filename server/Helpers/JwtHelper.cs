@@ -1,10 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.IdentityModel.Tokens;
-
-namespace SecureNotes.Functions.Helpers;
+﻿namespace SecureNotes.Functions.Helpers;
 
 public class JwtHelper
 {

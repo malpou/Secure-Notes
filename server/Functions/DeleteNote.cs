@@ -1,8 +1,4 @@
-﻿using System.Net;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-
-namespace SecureNotes.Functions;
+﻿namespace SecureNotes.Functions;
 
 public partial class Functions
 {

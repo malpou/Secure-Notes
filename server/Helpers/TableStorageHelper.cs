@@ -1,6 +1,4 @@
-﻿using Azure;
-using Azure.Data.Tables;
-using SecureNotes.Functions.Entities;
+﻿using SecureNotes.Functions.Entities;
 
 namespace SecureNotes.Functions.Helpers;
 

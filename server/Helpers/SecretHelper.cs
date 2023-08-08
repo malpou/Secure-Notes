@@ -1,7 +1,4 @@
-﻿using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
-
-namespace SecureNotes.Functions.Helpers;
+﻿namespace SecureNotes.Functions.Helpers;
 
 public class SecretHelper
 {
