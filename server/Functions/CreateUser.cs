@@ -29,7 +29,11 @@ public partial class Functions
             return req.CreateResponse(HttpStatusCode.Conflict);
         }
 
-        var userResponse = new UserResponse {Token = token};
+        var userResponse = new UserResponse
+        {
+            Token = token,
+            Username = loginRequest.Username
+        };
 
         logger.LogInformation("User created: {Username}", loginRequest.Username);
 

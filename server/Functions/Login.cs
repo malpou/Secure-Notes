@@ -29,7 +29,11 @@ public partial class Functions
             return req.CreateResponse(HttpStatusCode.Unauthorized);
         }
 
-        var userResponse = new UserResponse {Token = token};
+        var userResponse = new UserResponse
+        {
+            Token = token,
+            Username = loginRequest.Username
+        };
 
         logger.LogInformation("User logged in: {Username}", loginRequest.Username);
 
