@@ -32,7 +32,7 @@ public class UserService
         };
 
         var keyName = "master-key-" + user.RowKey;
-        await _keyHelper.CreateKeyAsync(keyName, KeyType.RsaHsm);
+        await _keyHelper.CreateKeyAsync(keyName, KeyType.Rsa);
 
         await _tableStorageHelper.AddEntityAsync(user);
 
