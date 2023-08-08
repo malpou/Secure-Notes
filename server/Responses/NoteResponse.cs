@@ -4,6 +4,6 @@ namespace SecureNotes.Functions.Responses;
 
 public class NoteResponse : NoteRequest
 {
-    public DateTimeOffset CreatedAt { private get; set; }
-    public DateTimeOffset UpdatedAt { private get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }
