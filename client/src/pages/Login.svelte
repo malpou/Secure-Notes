@@ -1,10 +1,9 @@
 <script lang="ts">
-    import { writable } from 'svelte/store';
     import {usernameStore, userToken} from "../store";
 
     let username = '';
     let password = '';
-    let errorMessage = ''; // Store the error message
+    let errorMessage = '';
 
     async function handleSubmit(isLogin: boolean) {
         const url = isLogin ? 'https://api.secure-notes.net/login' : 'https://api.secure-notes.net/register';

@@ -25,18 +25,20 @@
   }
 
   async function fetchNotes() {
-    isLoading = true
+    isLoading = true;
     const fetchedNotes = await fetchData<Note[]>(
       `https://api.secure-notes.net/note?page=${page}`
-    )
-    isLoading = false
+    );
+    isLoading = false;
 
-    if (fetchedNotes.length === 0) {
-      allNotesLoaded = true
-      return
+    notes = [...notes, ...fetchedNotes.map(convertTimeZones)];
+
+    if (fetchedNotes.length < 5) {
+      allNotesLoaded = true;
+      return;
     }
-    notes = [...notes, ...fetchedNotes.map(convertTimeZones)]
-  }
+}
+
 
   function convertTimeZones(note: Note): Note {
     return {
