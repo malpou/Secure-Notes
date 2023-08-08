@@ -26,6 +26,7 @@ public partial class Functions
 
         var noteResponses = noteArray.Select(note => new NoteResponse
         {
+            Id = note.RowKey,
             Title = note.Title,
             Content = note.Content,
             CreatedAt = note.CreatedTime,
