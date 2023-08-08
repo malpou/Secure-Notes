@@ -1,7 +1,7 @@
 <script lang="ts">
   import "./global.css"
   import { Router, Route, navigate } from "svelte-routing"
-  import Notes from "./pages/Notes.svelte"
+  import SecureNotes from "./pages/SecureNotes.svelte"
   import About from "./pages/About.svelte"
   import Login from "./pages/Login.svelte"
   import { usernameStore, userToken } from "./store"
@@ -76,7 +76,7 @@
     <Space h="md" />
     <Container>
       {#if $userToken && $usernameStore}
-        <Route path="/"><Notes /></Route>
+        <Route path="/" component={SecureNotes} />
       {:else}
         <Route path="/login" component={Login} />
       {/if}

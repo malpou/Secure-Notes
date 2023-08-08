@@ -28,6 +28,20 @@ export async function registerUser(username: string, password: string) {
   return response
 }
 
+export async function deleteAccount(token: string) {
+  const response = await fetch(`${BASE_URL}/account`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error("Error deleting account")
+  }
+  return
+}
+
 export async function createNote(
   title: string,
   content: string,

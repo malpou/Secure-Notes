@@ -1,9 +1,11 @@
 <script lang="ts">
-  import * as api from '../api';
+  import * as api from "../api"
   import EditNoteModal from "../components/EditNoteModal.svelte"
   import NoteComponent from "../components/NoteComponent.svelte"
+  import DeleteConfirmationModal from "../components/DeleteConfirmationModal.svelte"
   import { userToken, usernameStore } from "../store"
   import { Button, Title, Accordion, Space, Flex } from "@svelteuidev/core"
+  import { navigate } from "svelte-routing"
 
   let notes: Note[] = []
   let page = 1
@@ -11,6 +13,9 @@
   let isLoading = false
   let opened = false
   let editingNote: Note | null = null
+  let deleteConfirmationOpened = false
+  let itemToDelete: "account" | Note | null = null
+  let deleteConfirmationMessage: string = ""
 
   const closeModal = () => {
     opened = false
@@ -26,7 +31,38 @@
     opened = true
   }
 
-  async function saveNote(note: Note | null, title: string, content: string) {
+  const closeDeleteConfirmation = () => {
+    deleteConfirmationOpened = false
+    itemToDelete = null
+  }
+
+  const openNoteDeleteConfirmation = (note: Note) => {
+    itemToDelete = note
+    deleteConfirmationOpened = true
+  }
+
+  const openAccountDeleteConfirmation = () => {
+    itemToDelete = "account"
+    deleteConfirmationMessage = "Are you sure you want to delete your account?"
+    deleteConfirmationOpened = true
+  }
+
+  const confirmDelete = async (item?: Note | "account") => {
+    if (!item || (typeof item === "string" && item === "account")) {
+      await deleteAccount()
+      closeDeleteConfirmation()
+      return
+    }
+
+    closeDeleteConfirmation()
+    await deleteNote(item)
+  }
+
+  const saveNote = async (
+    note: Note | null,
+    title: string,
+    content: string
+  ) => {
     try {
       if (!note) {
         const newNote = await api.createNote(title, content, $userToken)
@@ -54,17 +90,8 @@
 
     closeModal()
   }
-
-  async function deleteNote(note: Note) {
-    try {
-      await api.deleteNote(note.id, $userToken)
-      notes = notes.filter((n) => n.id !== note.id)
-    } catch (error) {
-      console.error("Error deleting note:", error)
-    }
-  }
-
-  async function fetchNotes() {
+  
+  const fetchNotes = async () => {
     isLoading = true
     try {
       const fetchedNotes = await api.fetchNotes(page, $userToken)
@@ -77,6 +104,26 @@
       console.error("Error fetching notes:", error)
     } finally {
       isLoading = false
+    }
+  }
+
+  const deleteNote = async (note: Note) => {
+    try {
+      await api.deleteNote(note.id, $userToken)
+      notes = notes.filter((n) => n.id !== note.id)
+    } catch (error) {
+      console.error("Error deleting note:", error)
+    }
+  }
+
+  const deleteAccount = async () => {
+    try {
+      await api.deleteAccount($userToken)
+      $userToken = null
+      $usernameStore = null
+      navigate("/login")
+    } catch (error) {
+      console.error("Error deleting account:", error)
     }
   }
 
@@ -108,13 +155,25 @@
 <Flex justify="space-between">
   <Title order={1}>Secure notes for <i>{$usernameStore}</i></Title>
   {#if $usernameStore !== null}
-    <Button variant="outline" on:click={openModalForNewNote}>New Note</Button>
+    <Flex justify="right">
+      <Button variant="outline" on:click={openModalForNewNote}>New Note</Button>
+      <Space w="sm" />
+      <Button
+        variant="outline"
+        color="red"
+        on:click={openAccountDeleteConfirmation}>Delete Account</Button
+      >
+    </Flex>
   {/if}
 </Flex>
 <Space h="xl" />
 <Accordion>
   {#each notes as note}
-    <NoteComponent {note} onEdit={openModalForEditing} onDelete={deleteNote} />
+    <NoteComponent
+      {note}
+      onEdit={openModalForEditing}
+      onDelete={openNoteDeleteConfirmation}
+    />
   {/each}
 </Accordion>
 <Space h="xl" />
@@ -135,4 +194,12 @@
   note={editingNote}
   onClose={closeModal}
   onSave={saveNote}
+/>
+
+<DeleteConfirmationModal
+  opened={deleteConfirmationOpened}
+  message={deleteConfirmationMessage}
+  item={itemToDelete}
+  onClose={closeDeleteConfirmation}
+  onConfirmDelete={confirmDelete}
 />

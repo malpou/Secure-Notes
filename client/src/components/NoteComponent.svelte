@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { usernameStore } from "../store"
   import {
     Button,
     Flex,
@@ -27,13 +26,11 @@
   <Text size={"sm"}>
     Updated At: {note.updatedAt.toLocaleString()}
   </Text>
-  {#if $usernameStore === note.author}
-    <Flex justify="right">
-      <Button variant="outline" on:click={() => onEdit(note)}>Edit note</Button>
-      <Space w="sm" />
-      <Button color="red" variant="outline" on:click={() => onDelete(note)}
-        >Delete note</Button
-      >
-    </Flex>
-  {/if}
+  <Flex justify="right">
+    <Button variant="outline" on:click={() => onEdit(note)}>Edit note</Button>
+    <Space w="sm" />
+    <Button color="red" variant="outline" on:click={() => onDelete(note)}
+      >Delete note</Button
+    >
+  </Flex>
 </Accordion.Item>

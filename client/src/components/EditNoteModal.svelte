@@ -20,10 +20,15 @@
   let previousNote: Note | null = null;
 
   $: {
-    if (opened && note !== previousNote) {
-      title = note?.title || "";
-      content = note?.content || "";
-      previousNote = note;
+    if (opened) {
+      if (note !== previousNote) {
+        title = note?.title || "";
+        content = note?.content || "";
+        previousNote = note;
+      } else if (!note) {
+        title = "";
+        content = "";
+      }
     }
   }
 </script>

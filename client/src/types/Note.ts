@@ -4,5 +4,4 @@ type Note = {
   updatedAt: Date
   title: string
   content: string
-  author: string
 }
