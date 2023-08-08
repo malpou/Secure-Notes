@@ -8,6 +8,7 @@
     Text,
   } from "@svelteuidev/core"
   import { usernameStore, userToken } from "../store"
+  import { navigate } from "svelte-routing"
 
   let username = ""
   let password = ""
@@ -34,6 +35,7 @@
         setCookie("username", data.username, 3)
         usernameError = ""
         passwordError = ""
+        navigate("/")
       } else if (response.status === 401 && isLogin) {
         usernameError = ""
         passwordError = "Login failed. Please check your username and password."
@@ -77,10 +79,10 @@
 <TextInput error={passwordError} bind:value={password} type="password" />
 <Space h="xl" />
 <Flex>
-  <Button type="button" ripple on:click={() => handleSubmit(true)}>Login</Button
+  <Button color="green" on:click={() => handleSubmit(true)}>Login</Button
   >
   <Space w="md" />
-  <Button type="button" ripple on:click={() => handleSubmit(false)}
+  <Button color="green" variant="light" on:click={() => handleSubmit(false)}
     >Register</Button
   >
 </Flex>

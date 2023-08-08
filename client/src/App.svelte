@@ -1,6 +1,6 @@
 <script lang="ts">
   import "./global.css"
-  import { Router, Link, Route } from "svelte-routing"
+  import { Router, Route, navigate } from "svelte-routing"
   import Notes from "./pages/Notes.svelte"
   import About from "./pages/About.svelte"
   import Login from "./pages/Login.svelte"
@@ -27,6 +27,7 @@
     usernameStore.set(null)
     deleteCookie("jwtToken")
     deleteCookie("username")
+    navigate("/login")
   }
 
   function getCookie(name: string) {
@@ -44,14 +45,14 @@
   <Router {url}>
     <Container>
       <Flex justify="right">
-        <Button><Link to="/">Notes</Link></Button>
+        <Button variant="outline" on:click={() => navigate("/")}>Notes</Button>
         <Space w="sm" />
-        <Button><Link to="/about">About</Link></Button>
+        <Button variant="outline" on:click={() => navigate("/about")} >About</Button>
         <Space w="sm" />
         {#if $usernameStore}
-          <Button on:click={logout}>Logout</Button>
+          <Button color="red" variant="outline" on:click={logout}>Logout</Button>
         {:else}
-          <Button><Link to="/login">Login</Link></Button>
+          <Button color="green" variant="outline" on:click={() => navigate("/login")}>Login</Button>
         {/if}
       </Flex>
     </Container>

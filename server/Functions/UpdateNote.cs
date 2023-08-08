@@ -35,6 +35,7 @@ public partial class Functions
 
             var noteResponse = new NoteResponse
             {
+                Id = updatedNote.RowKey,
                 Title = updatedNote.Title,
                 Content = noteRequest.Content,
                 CreatedAt = updatedNote.CreatedTime,
