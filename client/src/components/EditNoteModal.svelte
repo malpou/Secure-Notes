@@ -2,13 +2,14 @@
   import {
     Modal,
     TextInput,
-    Textarea,
     Button,
     Space,
     Flex,
     Title,
     Text,
   } from "@svelteuidev/core"
+  // import Textarea from "client\node_modules\@svelteuidev\core\dist\components\TextInput\TextInput.svelte.d.ts"
+  import Textarea from "../../node_modules/@svelteuidev/core/dist/components/Textarea/Textarea.svelte"
   import { createEventDispatcher } from "svelte"
 
   export let opened: boolean
@@ -22,6 +23,8 @@
 
   const dispatch = createEventDispatcher()
 
+  let originalTitle = ""
+  let originalContent = ""
   let title = ""
   let content = ""
   let previousNote: Note | null = null
@@ -40,6 +43,8 @@
       if (note !== previousNote) {
         title = note?.title || ""
         content = note?.content || ""
+        originalTitle = note?.title
+        originalContent = note?.content
         previousNote = note
       } else if (!note) {
         title = ""
@@ -64,7 +69,7 @@
     <Button
       variant="outline"
       color="gray"
-      disabled={loading || title.length === 0 || content.length === 0}
+      disabled={loading}
       on:click={onClose}
       ripple>Close</Button
     >
@@ -73,7 +78,9 @@
       variant="outline"
       color="green"
       {loading}
-      disabled={title.length === 0 || content.length === 0}
+      disabled={title.length === 0 ||
+        content.length === 0 ||
+        (title === originalTitle && content === originalContent)}
       on:click={() => save(note, title, content)}
       ripple
     >
