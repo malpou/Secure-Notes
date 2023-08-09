@@ -64,7 +64,7 @@
     <Button
       variant="outline"
       color="gray"
-      disabled={loading}
+      disabled={loading || title.length === 0 || content.length === 0}
       on:click={onClose}
       ripple>Close</Button
     >
@@ -73,6 +73,7 @@
       variant="outline"
       color="green"
       {loading}
+      disabled={title.length === 0 || content.length === 0}
       on:click={() => save(note, title, content)}
       ripple
     >

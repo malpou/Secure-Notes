@@ -37,9 +37,13 @@
     if (token && username) {
       userToken.set(token)
       usernameStore.set(username)
-      navigate("/")
-    } else {
+      if (window.location.pathname === "/login") {
+        navigate("/")
+      }
+    } else if (window.location.pathname !== "/about") {
       navigate("/login")
+    } else {
+      navigate("/about")
     }
   })
 

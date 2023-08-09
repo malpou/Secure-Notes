@@ -86,7 +86,7 @@
 <Flex>
   <Button
     color="green"
-    disabled={registerLoading}
+    disabled={registerLoading || username.length === 0 || password.length === 0}
     loading={loginLoading}
     on:click={() => handleSubmit(true)}
     ripple>Login</Button
@@ -95,7 +95,7 @@
   <Button
     color="green"
     variant="light"
-    disabled={loginLoading}
+    disabled={loginLoading || username.length === 0 || password.length === 0}
     loading={registerLoading}
     on:click={() => handleSubmit(false)}
     ripple>Register</Button
