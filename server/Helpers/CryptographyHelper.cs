@@ -71,14 +71,15 @@ public class CryptographyHelper
         using var decrypt = aes.CreateDecryptor(key, iv);
         using var memStream = new MemoryStream(actualCipherText);
         using var cryptoStream = new CryptoStream(memStream, decrypt, CryptoStreamMode.Read);
-
-        var plainText = new byte[actualCipherText.Length];
-        var bytesRead = cryptoStream.Read(plainText, 0, plainText.Length);
-
-        var actualPlainText = new byte[bytesRead];
-        Array.Copy(plainText, 0, actualPlainText, 0, bytesRead);
-
-        return actualPlainText;
+    
+        using var msDecrypted = new MemoryStream();
+        var buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = cryptoStream.Read(buffer, 0, buffer.Length)) > 0)
+        {
+            msDecrypted.Write(buffer, 0, bytesRead);
+        }
+        return msDecrypted.ToArray();
     }
 
     private static byte[] GenerateRandomKey()
