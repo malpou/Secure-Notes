@@ -21,11 +21,16 @@ public class NoteService
         var encryptedContent = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(newNote.Content), user.RowKey);
         var encryptedTitle = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(newNote.Title), user.RowKey);
 
+        var hashedContent = HashingHelper.HashData(newNote.Content);
+        var hashedTitle = HashingHelper.HashData(newNote.Title);
+
         var encryptedNote = new Note
         {
             RowKey = Guid.NewGuid().ToString(),
             Title = encryptedTitle,
             Content = encryptedContent,
+            HashedTitle = hashedTitle,
+            HashedContent = hashedContent,
             PartitionKey = user.RowKey
         };
 
@@ -45,7 +50,7 @@ public class NoteService
 
         var cleanedNotes = await Task.WhenAll(notes
             .Select(note => DecryptNoteAsync(note, user.RowKey)));
-        
+
         return cleanedNotes.OrderByDescending(GetNoteComparisonDate);
     }
 
@@ -54,16 +59,33 @@ public class NoteService
         var noteToUpdate = await _tableStorageHelper.GetEntityByColumnAsync("RowKey", noteId);
         if (noteToUpdate == null || noteToUpdate.PartitionKey != user.RowKey) return null;
 
-        var encryptedContent =
-            await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Content), user.RowKey);
-        var encryptedTitle = await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Title), user.RowKey);
+        var contentChanged = !HashingHelper.ValidateHash(updateRequest.Content, noteToUpdate.HashedContent, out var newHashedContent);
+        var titleChanged = !HashingHelper.ValidateHash(updateRequest.Title, noteToUpdate.HashedTitle, out var newHashedTitle);
 
-        noteToUpdate.Content = encryptedContent;
-        noteToUpdate.Title = encryptedTitle;
+        if (!contentChanged && !titleChanged) return noteToUpdate;
+
+        if (contentChanged)
+        {
+            var encryptedContent =
+                await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Content), user.RowKey);
+
+            noteToUpdate.Content = encryptedContent;
+            noteToUpdate.HashedContent = newHashedContent;
+        }
+
+        if (titleChanged)
+        {
+            var encryptedTitle =
+                await _cryptoHelper.EncryptData(Encoding.UTF8.GetBytes(updateRequest.Title), user.RowKey);
+
+            noteToUpdate.Title = encryptedTitle;
+            noteToUpdate.HashedTitle = newHashedTitle;
+        }
+
         noteToUpdate.LastUpdatedTime = DateTimeOffset.UtcNow;
 
         await _tableStorageHelper.UpdateEntityAsync(noteToUpdate, noteToUpdate.ETag);
-        
+
         return noteToUpdate;
     }
 
@@ -86,7 +108,7 @@ public class NoteService
     public async Task<bool> DeleteAllNotes(User user)
     {
         var notes = await _tableStorageHelper.GetAllEntitiesByColumnAsync("PartitionKey", user.RowKey);
-        
+
         if (!notes.Any()) return true;
 
         await Task.WhenAll(notes.Select(note => _tableStorageHelper.DeleteEntityAsync(note.PartitionKey, note.RowKey)));

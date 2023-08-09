@@ -32,7 +32,7 @@ public partial class Functions
             Title = note.Title,
             Content = note.Content,
             CreatedAt = note.CreatedTime,
-            UpdatedAt = note.LastUpdatedTime,
+            UpdatedAt = note.LastUpdatedTime
         }).ToList();
 
         logger.LogInformation("Notes retrieved: {Count}", noteArray.Length);
